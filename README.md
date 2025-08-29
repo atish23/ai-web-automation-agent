@@ -2,11 +2,17 @@
 
 An intelligent web automation agent that combines **OpenAI's GPT-4** with **Playwright** browser automation to perform complex web tasks with visual feedback and interactive controls.
 
+## 🎬 Demo
+
+**[🔗 Watch Live Demo on X/Twitter](https://x.com/aatish2393/status/1961324999546978334)**
+
+See the AI agent in action automating real websites with intelligent form filling and navigation!
+
 ## ✨ Features
 
 ### 🧠 AI-Powered Automation
 - **Task Analysis**: Uses GPT-4 to understand and break down automation tasks
-- **Smart Element Detection**: Automatically finds and matches form elements with task requirements
+- **Smart Element Detection**: Automatically finds and matches form elements with task requirements  
 - **Dynamic Action Planning**: Creates step-by-step execution plans based on page content
 - **Adaptive Execution**: Handles various website layouts and structures
 
@@ -25,7 +31,7 @@ An intelligent web automation agent that combines **OpenAI's GPT-4** with **Play
 
 ### 🖥️ User Experience
 - **Mid-size Browser Window**: Optimized 1200x800 viewport with 80% zoom
-- **Interactive Input System**: Choose from predefined or custom automation tasks
+- **Interactive Input System**: Simple automation task input
 - **Comprehensive Logging**: Detailed execution logs with timing information
 - **Error Handling**: Robust error recovery and reporting
 
@@ -41,8 +47,8 @@ OpenAI API key
 ### Installation
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd web_automation_agent
+git clone https://github.com/atish23/ai-web-automation-agent.git
+cd ai-web-automation-agent
 ```
 
 2. Install dependencies:
@@ -64,42 +70,50 @@ node ai-web-automation-agent.js
 ## 🎯 Usage Examples
 
 ### Interactive Mode
-When you run the agent, you'll see an interactive menu:
+When you run the agent, you'll see a clean interface:
 
 ```
-🤖 INTERACTIVE WEB AUTOMATION AGENT
-================================================================================
-
-Options:
-1. Run predefined signup automation (ui.chaicode.com)
-2. Custom website automation
-3. Quick form filling
-4. Exit
+🎯 What would you like to do today?
+❯ 🤖 Automate Website (describe any automation task)
+  👋 Exit (goodbye)
 ```
 
 ### Example Tasks
 
-#### 1. **Predefined Signup Flow**
+#### **Website Automation Examples**
 ```
-Task: Navigate to ui.chaicode.com, find the sign up form link, 
-fill it with name "John Doe", email "john@example.com", and submit it
-```
-
-#### 2. **Custom Website Automation**
-```
-URL: https://example.com/contact
-Task: Fill out the contact form with my information
-Name: John Doe
-Email: john@example.com
+Task: "Go to ui.chaicode.com and fill signup form"
+Task: "Navigate to YouTube and search for AI tutorials"
+Task: "Go to GitHub and search for automation projects"
+Task: "Visit Amazon and search for laptops"
 ```
 
-#### 3. **Quick Form Filling**
+## 🏗️ Project Structure
+
+The project follows a modular architecture for maintainability and extensibility:
+
 ```
-URL: https://forms.example.com/survey
-Name: John Doe
-Email: john@example.com
-Phone: +1-555-0123
-Company: Acme Corp
+ai-web-automation-agent/
+├── classes/                    # Core utility classes
+│   ├── Logger.js              # Enhanced logging with colors & formatting
+│   ├── Timer.js               # Performance timing measurements
+│   ├── BrowserUIAnimator.js   # Visual feedback & animations
+│   └── BeautifulCLI.js        # CLI styling & user interaction
+├── tools/                     # Modular automation tools
+│   ├── analyzeTaskTool.js     # AI-powered task analysis
+│   ├── openBrowserTool.js     # Browser initialization
+│   ├── analyzeFormDOMTool.js  # DOM-based form analysis
+│   ├── findRelevantElementsTool.js # Smart element discovery
+│   ├── matchTaskWithElementsTool.js # AI action plan creation
+│   ├── clickAtCoordinatesTool.js    # Precise click automation
+│   ├── fillFieldAtCoordinatesTool.js # Form field filling
+│   ├── executeActionPlanTool.js     # Action execution
+│   └── checkExecutionStatusTool.js  # Status verification
+├── ui/                        # User interface components
+│   └── UserInterface.js       # Main UI orchestration
+├── ai-web-automation-agent.js # Main application entry point
+├── package.json               # Dependencies and scripts
+└── README.md                  # This file
 ```
 
 ## 🔧 Technical Architecture
@@ -119,16 +133,17 @@ await BrowserUIAnimator.showStatusBadge(page, 'Form filled!');
 await BrowserUIAnimator.showClickAnimation(page, x, y);
 ```
 
-#### 🛠️ **Automation Tools**
-- `analyzeTaskTool`: AI-powered task analysis
-- `openBrowserTool`: Browser initialization with optimized settings
-- `analyzeFormDOMTool`: DOM analysis for form detection
-- `findRelevantElementsTool`: Smart element discovery
-- `matchTaskWithElementsTool`: AI-powered action plan creation
-- `executeActionPlanTool`: Step-by-step action execution
-- `clickAtCoordinatesTool`: Precise click automation
-- `fillFieldAtCoordinatesTool`: Form field filling
-- `checkExecutionStatusTool`: Execution verification
+#### 🛠️ **Modular Tool System**
+Each automation capability is isolated in its own tool:
+- **analyzeTaskTool**: AI-powered task understanding
+- **openBrowserTool**: Optimized browser setup
+- **analyzeFormDOMTool**: Form detection & analysis
+- **findRelevantElementsTool**: Smart element discovery
+- **matchTaskWithElementsTool**: AI action planning
+- **executeActionPlanTool**: Step-by-step execution
+- **clickAtCoordinatesTool**: Precise interactions
+- **fillFieldAtCoordinatesTool**: Form filling
+- **checkExecutionStatusTool**: Success verification
 
 #### 📊 **Enhanced Logging System**
 ```javascript
@@ -136,6 +151,9 @@ Logger.info('Task started', { task });
 Logger.tool('click_at_coordinates', 'completed', duration, { x, y });
 Logger.success('Automation completed successfully');
 ```
+
+#### 🎨 **UserInterface Class**
+Manages startup animations, user input, and graceful shutdown
 
 ### Browser Configuration
 - **Window Size**: 1200x800 (mid-size for optimal viewing)
@@ -246,8 +264,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **OpenAI** for the powerful GPT-4 API
 - **Microsoft Playwright** for robust browser automation
-- **Web Developers** everywhere for creating amazing web experiences to automate
+- **The Open Source Community** for inspiration and tools
 
 ---
 
 **Built with ❤️ for intelligent web automation**
+
+### 🔗 Connect & Share
+
+- **Demo**: [Watch on X/Twitter](https://x.com/aatish2393/status/1961324999546978334)
+- **Author**: [@aatish2393](https://x.com/aatish2393)
+- **Repository**: [GitHub](https://github.com/atish23/ai-web-automation-agent)
