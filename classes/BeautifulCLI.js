@@ -42,11 +42,6 @@ class BeautifulCLI {
         short: 'Automate'
       },
       {
-        name: chalk.cyan('📊 Automation Analytics') + chalk.gray(' (view stats)'),
-        value: 'analytics',
-        short: 'Analytics'
-      },
-      {
         name: chalk.red('👋 Exit') + chalk.gray(' (goodbye)'),
         value: 'exit',
         short: 'Exit'
@@ -139,26 +134,6 @@ class BeautifulCLI {
     const bar = '█'.repeat(Math.round(progress / 5)) + '░'.repeat(20 - Math.round(progress / 5));
     
     console.log(`\n${chalk.blue('Progress:')} [${chalk.green(bar)}] ${chalk.yellow(progress + '%')} - ${chalk.white(message)}`);
-  }
-
-  static showAnalytics() {
-    const table = new Table({
-      head: [chalk.blue.bold('Metric'), chalk.green.bold('Value')],
-      style: {
-        head: ['cyan'],
-        border: ['grey']
-      }
-    });
-
-    table.push(
-      ['🎯 Success Rate', chalk.green('87%')],
-      ['⚡ Avg. Execution Time', chalk.yellow('15.2s')],
-      ['🤖 Tasks Completed', chalk.blue('127')],
-      ['🌐 Websites Automated', chalk.magenta('43')],
-      ['⭐ User Rating', chalk.yellow('4.8/5')]
-    );
-
-    Logger.box(table.toString(), '📊 AUTOMATION ANALYTICS');
   }
 }
 
