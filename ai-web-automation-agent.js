@@ -25,6 +25,8 @@ import clickAtCoordinatesTool from './tools/clickAtCoordinatesTool.js';
 import fillFieldAtCoordinatesTool from './tools/fillFieldAtCoordinatesTool.js';
 import executeActionPlanTool from './tools/executeActionPlanTool.js';
 import checkExecutionStatusTool from './tools/checkExecutionStatusTool.js';
+import checkLinksTool from './tools/checkLinksTool.js';
+import waitAndScrollTool from './tools/waitAndScrollTool.js';
 
 // Initialize OpenAI client
 const openai = new OpenAI();
@@ -39,30 +41,45 @@ global.page = page;
 // Main Website Automation Agent
 const websiteAutomationAgent = new Agent({
   name: 'DOM-Based Website Automation Agent',
-  instructions: `
-    Execute these steps FAST:
-    1. analyze_task 
-    2. open_browser 
-    3. analyze_form_dom 
-    4. If no form: find_relevant_elements → click_at_coordinates → analyze_form_dom
-    5. match_task_with_elements 
-    6. execute_action_plan 
-        
-    Be IMMEDIATE and EFFICIENT. No delays.
+  instructions: ({ input }) => `
+    You are an expert website automation agent. Your goal is to complete the following task as efficiently as possible:
+
+    TASK: "${input}"
+
+    For this task, follow these steps:
+    1. analyze_task — Understand the task and extract key requirements and come up with a plan.
+    2. open_browser — Navigate to the relevant website.
+    3. check_links — Check all links on the page and consider their relevance to the task.
+    4. If a relevant link is found, interact with it as needed (e.g., click, follow).
+    5. wait_and_scroll — Wait for dynamic content to load and scroll to see more content.
+    6. analyze_form_dom — Analyze the DOM for forms relevant to the task.
+    7. If no form is found: find_relevant_elements → click_at_coordinates → analyze_form_dom.
+    8. match_task_with_elements — Map task requirements to page elements.
+    9. fill_field_at_coordinates — Fill in fields as needed.
+    10. execute_action_plan — Perform the necessary actions to complete the task.
+    11. check_execution_status — Verify if the task was completed successfully.
+
+    IMPORTANT: After performing search actions or navigating to result pages, always use wait_and_scroll to:
+    - Wait for dynamic content to load (3-5 seconds)
+    - Scroll down multiple times to load more results
+    - Allow lazy-loaded content to appear
+
+    Always adapt your actions to the specific requirements of the task. Be immediate, efficient, and ensure you wait for content to fully load before proceeding.
   `,
   tools: [
     analyzeTaskTool,
     openBrowserTool,
+    checkLinksTool,
+    waitAndScrollTool,
     analyzeFormDOMTool,
     findRelevantElementsTool,
-    matchTaskWithElementsTool,
     clickAtCoordinatesTool,
+    matchTaskWithElementsTool,
     fillFieldAtCoordinatesTool,
     executeActionPlanTool,
     checkExecutionStatusTool,
   ],
 });
-
 // Update run function with beautiful progress display
 async function automateWebsite(task) {
   const overallTimer = new Timer('automateWebsite');
@@ -85,7 +102,7 @@ async function automateWebsite(task) {
     }).start();
     
     const result = await run(websiteAutomationAgent, task, {
-      maxTurns: 10, // Reduced from 15 for faster completion
+      maxTurns: 20,
     });
     
     spinner.stop();
