@@ -1,0 +1,45 @@
+{
+  "name": "ai-web-automation-agent",
+  "version": "1.0.0",
+  "description": "AI-powered web automation agent with visual feedback and interactive controls",
+  "main": "ai-web-automation-agent.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ai-web-automation-agent.js",
+    "dev": "node ai-web-automation-agent.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "ai",
+    "automation",
+    "web",
+    "playwright",
+    "openai",
+    "gpt-4",
+    "browser",
+    "bot",
+    "scraping",
+    "form-filling"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@openai/agents": "^0.0.17",
+    "dotenv": "^17.2.1",
+    "openai": "^5.16.0",
+    "playwright": "^1.55.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/ai-web-automation-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/ai-web-automation-agent/issues"
+  },
+  "homepage": "https://github.com/yourusername/ai-web-automation-agent#readme"
+}
