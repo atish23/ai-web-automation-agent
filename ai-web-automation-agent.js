@@ -12,380 +12,17 @@ import boxen from 'boxen';
 import inquirer from 'inquirer';
 import Table from 'cli-table3';
 
+// Import our modular classes
+import Logger from './classes/Logger.js';
+import Timer from './classes/Timer.js';
+import BrowserUIAnimator from './classes/BrowserUIAnimator.js';
+import BeautifulCLI from './classes/BeautifulCLI.js';
+
 // Initialize OpenAI client
 const openai = new OpenAI();
 
 let browser;
 let page;
-
-// Enhanced Logging System with Beautiful Colors
-class Logger {
-  static log(level, message, data = null) {
-    const timestamp = new Date().toISOString();
-    let coloredLevel;
-    
-    switch (level.toLowerCase()) {
-      case 'info':
-        coloredLevel = chalk.blue.bold(`📍 ${level.toUpperCase()}`);
-        break;
-      case 'warn':
-        coloredLevel = chalk.yellow.bold(`⚠️  ${level.toUpperCase()}`);
-        break;
-      case 'error':
-        coloredLevel = chalk.red.bold(`❌ ${level.toUpperCase()}`);
-        break;
-      case 'debug':
-        coloredLevel = chalk.gray.bold(`🔍 ${level.toUpperCase()}`);
-        break;
-      case 'success':
-        coloredLevel = chalk.green.bold(`✅ ${level.toUpperCase()}`);
-        break;
-      case 'tool':
-        coloredLevel = chalk.magenta.bold(`🔧 ${level.toUpperCase()}`);
-        break;
-      default:
-        coloredLevel = chalk.white.bold(`📝 ${level.toUpperCase()}`);
-    }
-    
-    console.log(`${chalk.gray(`[${timestamp}]`)} ${coloredLevel}: ${chalk.white(message)}`);
-    if (data) {
-      console.log(chalk.cyan('  📊 Data:'), chalk.dim(JSON.stringify(data, null, 2)));
-    }
-  }
-
-  static info(message, data = null) { this.log('info', message, data); }
-  static warn(message, data = null) { this.log('warn', message, data); }
-  static error(message, data = null) { this.log('error', message, data); }
-  static debug(message, data = null) { this.log('debug', message, data); }
-  static success(message, data = null) { this.log('success', message, data); }
-
-  static tool(toolName, status, duration = null, data = null) {
-    const statusColor = status === 'completed' ? chalk.green('✅') : 
-                       status === 'failed' ? chalk.red('❌') : 
-                       chalk.yellow('⏳');
-    
-    this.log('tool', `${statusColor} ${chalk.bold(toolName)} - ${chalk.italic(status)}`, {
-      tool: toolName,
-      status,
-      duration: duration ? `${duration}ms` : null,
-      ...data
-    });
-  }
-
-  static separator(char = '=', length = 80) {
-    console.log(gradient.rainbow(char.repeat(length)));
-  }
-
-  static banner(text) {
-    console.log(gradient.rainbow(figlet.textSync(text, { 
-      font: 'ANSI Shadow',
-      horizontalLayout: 'default',
-      verticalLayout: 'default'
-    })));
-  }
-
-  static box(content, title = '') {
-    console.log(boxen(content, {
-      title: title,
-      titleAlignment: 'center',
-      padding: 1,
-      margin: 1,
-      borderStyle: 'double',
-      borderColor: 'cyan',
-      backgroundColor: 'black'
-    }));
-  }
-}
-
-class Timer {
-  constructor(name) {
-    this.name = name;
-    this.startTime = performance.now();
-  }
-
-  end() {
-    return Math.round(performance.now() - this.startTime);
-  }
-}
-
-// Browser UI Animation Helper Class
-class BrowserUIAnimator {
-  static async injectAnimationCSS(page) {
-    await page.addStyleTag({
-      content: `
-        /* Automation Visual Indicators */
-        .automation-highlight {
-          position: absolute;
-          border: 3px solid #ff6b6b;
-          border-radius: 8px;
-          background: rgba(255, 107, 107, 0.1);
-          pointer-events: none;
-          z-index: 999999;
-          animation: highlight-pulse 1s ease-in-out infinite;
-          box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
-        }
-        
-        .automation-click-indicator {
-          position: absolute;
-          width: 20px;
-          height: 20px;
-          border: 2px solid #4ecdc4;
-          border-radius: 50%;
-          background: rgba(78, 205, 196, 0.2);
-          pointer-events: none;
-          z-index: 999999;
-          animation: click-ripple 0.8s ease-out;
-          transform: translate(-50%, -50%);
-        }
-        
-        .automation-typing-indicator {
-          position: absolute;
-          background: #45b7d1;
-          color: white;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-          font-family: Arial, sans-serif;
-          pointer-events: none;
-          z-index: 999999;
-          animation: typing-bounce 0.5s ease-in-out infinite alternate;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        .automation-progress-bar {
-          position: fixed;
-          top: 0;
-          left: 0;
-          height: 4px;
-          background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
-          z-index: 999999;
-          transition: width 0.3s ease;
-          box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-        }
-        
-        .automation-status-badge {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          padding: 10px 15px;
-          border-radius: 25px;
-          font-family: Arial, sans-serif;
-          font-size: 14px;
-          z-index: 999999;
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          animation: status-fade-in 0.3s ease-in;
-        }
-        
-        @keyframes highlight-pulse {
-          0%, 100% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.02); }
-        }
-        
-        @keyframes click-ripple {
-          0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-          100% { opacity: 0; transform: translate(-50%, -50%) scale(3); }
-        }
-        
-        @keyframes typing-bounce {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-3px); }
-        }
-        
-        @keyframes status-fade-in {
-          0% { opacity: 0; transform: translateY(-10px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        .automation-element-label {
-          position: absolute;
-          background: #2c3e50;
-          color: white;
-          padding: 2px 6px;
-          border-radius: 3px;
-          font-size: 10px;
-          font-family: Arial, sans-serif;
-          pointer-events: none;
-          z-index: 999999;
-          white-space: nowrap;
-        }
-      `
-    });
-  }
-
-  static async showProgressBar(page, progress, status) {
-    await page.evaluate(({ progress, status }) => {
-      // Remove existing progress bar
-      const existing = document.querySelector('.automation-progress-bar');
-      if (existing) existing.remove();
-
-      // Create new progress bar
-      const progressBar = document.createElement('div');
-      progressBar.className = 'automation-progress-bar';
-      progressBar.style.width = `${progress}%`;
-      document.body.appendChild(progressBar);
-    }, { progress, status });
-  }
-
-  static async showStatusBadge(page, status) {
-    await page.evaluate((status) => {
-      const existing = document.querySelector('.automation-status-badge');
-      if (existing) existing.remove();
-
-      const badge = document.createElement('div');
-      badge.className = 'automation-status-badge';
-      badge.textContent = `🤖 ${status}`;
-      document.body.appendChild(badge);
-    }, status);
-  }
-
-  static async highlightElement(page, x, y, label = '') {
-    await page.evaluate(({ x, y, label }) => {
-      const highlight = document.createElement('div');
-      highlight.className = 'automation-highlight';
-      
-      // Position the highlight
-      const element = document.elementFromPoint(x, y);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        highlight.style.left = `${rect.left - 5}px`;
-        highlight.style.top = `${rect.top - 5}px`;
-        highlight.style.width = `${rect.width + 10}px`;
-        highlight.style.height = `${rect.height + 10}px`;
-      }
-
-      document.body.appendChild(highlight);
-
-      // Add label if provided
-      if (label) {
-        const labelEl = document.createElement('div');
-        labelEl.className = 'automation-element-label';
-        labelEl.textContent = label;
-        labelEl.style.left = `${x + 10}px`;
-        labelEl.style.top = `${y - 25}px`;
-        document.body.appendChild(labelEl);
-
-        setTimeout(() => labelEl.remove(), 2000);
-      }
-
-      // Remove highlight after animation
-      setTimeout(() => highlight.remove(), 3000);
-    }, { x, y, label });
-  }
-
-  static async showClickAnimation(page, x, y) {
-    await page.evaluate(({ x, y }) => {
-      const clickIndicator = document.createElement('div');
-      clickIndicator.className = 'automation-click-indicator';
-      clickIndicator.style.left = `${x}px`;
-      clickIndicator.style.top = `${y}px`;
-      document.body.appendChild(clickIndicator);
-
-      setTimeout(() => clickIndicator.remove(), 800);
-    }, { x, y });
-  }
-
-  static async showTypingAnimation(page, x, y, text) {
-    await page.evaluate(({ x, y, text }) => {
-      const typingIndicator = document.createElement('div');
-      typingIndicator.className = 'automation-typing-indicator';
-      typingIndicator.textContent = `✍️ Typing: ${text.substring(0, 20)}...`;
-      typingIndicator.style.left = `${x + 10}px`;
-      typingIndicator.style.top = `${y - 35}px`;
-      document.body.appendChild(typingIndicator);
-
-      setTimeout(() => typingIndicator.remove(), 2000);
-    }, { x, y, text });
-  }
-
-  static async clearAllAnimations(page) {
-    await page.evaluate(() => {
-      document.querySelectorAll('.automation-highlight, .automation-click-indicator, .automation-typing-indicator, .automation-element-label').forEach(el => el.remove());
-    });
-  }
-
-  // Show loader/spinner
-  static async showLoader(page, message = 'Processing...') {
-    await page.evaluate(({ message }) => {
-      // Remove existing loader
-      const existing = document.querySelector('#automation-loader');
-      if (existing) existing.remove();
-
-      const loader = document.createElement('div');
-      loader.id = 'automation-loader';
-      loader.innerHTML = `
-        <div class="loader-spinner"></div>
-        <div class="loader-text">${message}</div>
-      `;
-      loader.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 16px;
-        font-weight: 500;
-        text-align: center;
-        z-index: 10003;
-        backdrop-filter: blur(10px);
-        animation: loaderFadeIn 0.3s ease-out;
-      `;
-
-      // Add spinner styles if not already present
-      if (!document.querySelector('#loader-styles')) {
-        const style = document.createElement('style');
-        style.id = 'loader-styles';
-        style.textContent = `
-          .loader-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #2196F3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px auto;
-          }
-          .loader-text {
-            color: #fff;
-            font-size: 14px;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes loaderFadeIn {
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-          }
-          @keyframes loaderFadeOut {
-            from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-          }
-        `;
-        document.head.appendChild(style);
-      }
-
-      document.body.appendChild(loader);
-    }, { message });
-  }
-
-  // Hide loader
-  static async hideLoader(page) {
-    await page.evaluate(() => {
-      const loader = document.querySelector('#automation-loader');
-      if (loader) {
-        loader.style.animation = 'loaderFadeOut 0.3s ease-in forwards';
-        setTimeout(() => loader.remove(), 300);
-      }
-    });
-  }
-}
 
 // Task Analysis Tool
 
@@ -412,7 +49,7 @@ const analyzeTaskTool = tool({
           role: 'user',
           content: `Task: "${task}". Brief analysis only (1 sentence).`
         }],
-        max_tokens: 50 // Reduced from 100
+        max_tokens: 50
       });
       
       // Hide loader after API response
@@ -1088,178 +725,21 @@ async function automateWebsite(task) {
   }
 }
 
-// Beautiful CLI Interface Helper
-class BeautifulCLI {
-  static async showWelcome() {
-    console.clear();
-    
-    // Main title with gradient
-    Logger.banner('WEB BOT');
-    
-    console.log(gradient.rainbow.multiline([
-      '                    🤖 AI-Powered Web Automation Agent 🚀',
-      '                      Automate any website like magic!'
-    ].join('\n')));
-    
-    console.log('\n');
-    
-    // Feature highlights
-    const features = [
-      '🎯 Smart DOM Analysis',
-      '⚡ Lightning Fast Execution', 
-      '🎨 Beautiful Browser Animations',
-      '🧠 AI-Powered Decision Making',
-      '📊 Real-time Progress Tracking'
-    ];
-    
-    Logger.box(
-      features.join('\n'), 
-      '✨ FEATURES ✨'
-    );
-  }
-
-  static async showOptions() {
-    const choices = [
-      {
-        name: chalk.green('🚀 Quick Automation') + chalk.gray(' (single query input)'),
-        value: 'quick',
-        short: 'Quick'
-      },
-      {
-        name: chalk.blue('🌐 Custom Website Automation') + chalk.gray(' (single query input)'),
-        value: 'custom',
-        short: 'Custom'
-      },
-      {
-        name: chalk.cyan('📊 Automation Analytics') + chalk.gray(' (view stats)'),
-        value: 'analytics',
-        short: 'Analytics'
-      },
-      {
-        name: chalk.red('👋 Exit') + chalk.gray(' (goodbye)'),
-        value: 'exit',
-        short: 'Exit'
-      }
-    ];
-
-    const { action } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'action',
-        message: chalk.bold.white('🎯 What would you like to automate today?'),
-        choices,
-        pageSize: 10,
-        prefix: '🤖',
-        suffix: '',
-      }
-    ]);
-
-    return action;
-  }
-
-  static async getQuickAutomationQuery() {
-    const { query } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'query',
-        message: chalk.blue('🤖 What would you like to automate?'),
-        placeholder: 'e.g., "Go to ui.chaicode.com and fill signup form with my details"',
-        validate: (input) => input.trim() ? true : 'Please describe what you want to automate!',
-        prefix: '�',
-      }
-    ]);
-
-    return query;
-  }
-
-  static async getCustomAutomationQuery() {
-    const { query } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'query',
-        message: chalk.blue('🌐 Describe your automation task:'),
-        placeholder: 'e.g., "Navigate to example.com, find contact form, fill it with John Doe details and submit"',
-        validate: (input) => input.trim() ? true : 'Please describe your automation task!',
-        prefix: '�',
-      }
-    ]);
-
-    return query;
-  }
-
-  static showTaskSummary(task, type) {
-    const table = new Table({
-      head: [chalk.blue.bold('Property'), chalk.green.bold('Value')],
-      colWidths: [20, 60],
-      style: {
-        head: ['cyan'],
-        border: ['grey'],
-        compact: true
-      }
-    });
-
-    table.push(
-      [chalk.yellow('🎯 Task Type'), chalk.white(type)],
-      [chalk.yellow('📝 Description'), chalk.white(task.substring(0, 80) + (task.length > 80 ? '...' : ''))],
-      [chalk.yellow('⏰ Started'), chalk.white(new Date().toLocaleTimeString())],
-      [chalk.yellow('🚀 Status'), chalk.green('Ready to Execute')]
-    );
-
-    console.log('\n' + table.toString());
-  }
-
-  static showProgress(step, total, message) {
-    const progress = Math.round((step / total) * 100);
-    const bar = '█'.repeat(Math.round(progress / 5)) + '░'.repeat(20 - Math.round(progress / 5));
-    
-    console.log(`\n${chalk.blue('Progress:')} [${chalk.green(bar)}] ${chalk.yellow(progress + '%')} - ${chalk.white(message)}`);
-  }
-
-  static showAnalytics() {
-    const table = new Table({
-      head: [chalk.blue.bold('Metric'), chalk.green.bold('Value')],
-      style: {
-        head: ['cyan'],
-        border: ['grey']
-      }
-    });
-
-    table.push(
-      ['🎯 Success Rate', chalk.green('87%')],
-      ['⚡ Avg. Execution Time', chalk.yellow('15.2s')],
-      ['🤖 Tasks Completed', chalk.blue('127')],
-      ['🌐 Websites Automated', chalk.magenta('43')],
-      ['⭐ User Rating', chalk.yellow('4.8/5')]
-    );
-
-    Logger.box(table.toString(), '📊 AUTOMATION ANALYTICS');
-  }
-}
-
 async function getUserInput() {
   await BeautifulCLI.showWelcome();
-  
+
   const action = await BeautifulCLI.showOptions();
-  
+
   switch (action) {
-    case 'quick':
-      const quickQuery = await BeautifulCLI.getQuickAutomationQuery();
-      
-      BeautifulCLI.showTaskSummary(quickQuery, 'Quick Automation');
+    case 'automate':
+      const automationQuery = await BeautifulCLI.getAutomationQuery();
+
+      BeautifulCLI.showTaskSummary(automationQuery, 'Website Automation');
       return {
-        type: 'quick',
-        task: quickQuery
+        type: 'automation',
+        task: automationQuery
       };
-      
-    case 'custom':
-      const customQuery = await BeautifulCLI.getCustomAutomationQuery();
-      
-      BeautifulCLI.showTaskSummary(customQuery, 'Custom Automation');
-      return {
-        type: 'custom',
-        task: customQuery
-      };
-      
+
     case 'analytics':
       BeautifulCLI.showAnalytics();
       console.log(chalk.yellow('\n📊 Analytics displayed! Press any key to continue...'));
@@ -1270,12 +750,12 @@ async function getUserInput() {
         default: true
       }]);
       return await getUserInput(); // Recursive call to show menu again
-      
+
     case 'exit':
       console.log(gradient.rainbow('\n👋 Thank you for using Web Automation Agent!'));
       console.log(chalk.green('🚀 Happy automating! ✨\n'));
       process.exit(0);
-      
+
     default:
       console.log(chalk.red('❌ Invalid option selected.'));
       return await getUserInput();
